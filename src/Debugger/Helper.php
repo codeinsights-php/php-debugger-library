@@ -41,13 +41,6 @@ class Helper
 
         $stack = [];
 
-        $stack[] = [
-            'where' => '{extension}',
-            'type' => '',
-            'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
-            'lineno' => $calledFromLine,
-        ];
-
         // First record of the backtrace contains debug_backtrace() method / function call made by the extension
         // unset($backtrace[0]);
 
@@ -57,21 +50,34 @@ class Helper
 
             $arguments = [];
 
-            foreach ($backtraceDetails['args'] as $arg) {
-                $arguments[] = var_export($arg, true);
+            if (isset($backtraceDetails['args']) === true && empty($backtraceDetails['args']) === false)
+            {
+                foreach ($backtraceDetails['args'] as $arg) {
+                    $arguments[] = var_export($arg, true);
+                }
             }
 
-            $arguments = (!empty($arguments) ? implode(', ', $arguments) : '');
+            $arguments = implode(', ', $arguments);
 
             $arguments = self::cleanStringifiedObject($arguments);
 
+            $callSource = '';
+
+            if (isset($backtraceDetails['class']))
+            {
+                $callSource .= $backtraceDetails['class'] . $backtraceDetails['type'];
+            }
+
+            $callSource .= $backtraceDetails['function'] . '(' . $arguments . ')';
+
+            if ($callSource == 'unknown()')
+            {
+                $callSource = '{extension}';
+            }
+
             // Transform / wrangle backtrace data to the stacktrace format expected by the web "IDE"
             $stack[] = [
-                'where' =>
-                    (isset($backtraceDetails['class']) ? $backtraceDetails['class'] . $backtraceDetails['type'] : '') .
-                    $backtraceDetails['function'] .
-                    '(' . $arguments . ')'
-                ,
+                'where' => $callSource,
                 'type' => 'file',
                 'filename' => str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']),
                 'lineno' => $backtraceDetails['line'],
