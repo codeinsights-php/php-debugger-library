@@ -1,0 +1,8 @@
+{
+    "require": {
+        "vlucas/phpdotenv": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {"CodeInsights\\": "src/"}
+    }
+}
