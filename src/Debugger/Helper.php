@@ -41,6 +41,13 @@ class Helper
 
         $stack = [];
 
+        $stack[] = [
+            'where' => '{extension}',
+            'type' => '',
+            'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
+            'lineno' => $calledFromLine,
+        ];
+
         // First record of the backtrace contains debug_backtrace() method / function call made by the extension
         // unset($backtrace[0]);
 
@@ -69,15 +76,6 @@ class Helper
                 'filename' => str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']),
                 'lineno' => $backtraceDetails['line'],
                 'retrieve_context' => false,
-            ];
-        }
-
-        if (isset($stack[0]) === false) {
-            $stack[] = [
-                'where' => '{main}',
-                'type' => '',
-                'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
-                'lineno' => $calledFromLine,
             ];
         }
 
