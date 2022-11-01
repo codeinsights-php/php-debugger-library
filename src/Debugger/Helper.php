@@ -148,8 +148,23 @@ class Helper
 
     public static function sendDebugData(): void
     {
-        // TODO: Send data to the appropriate Pusher channel
-        print_r(self::$debuggingData);
+        // print_r(self::$debuggingData); die();
+
+        $pusher = new \Pusher\Pusher
+        (
+            $_ENV['PUSHER_APP_KEY'],
+            $_ENV['PUSHER_APP_SECRET'],
+            $_ENV['PUSHER_APP_ID'],
+            [
+                'cluster' => $_ENV['PUSHER_CLUSTER'],
+                'useTLS' => true,
+            ],
+        );
+
+        $payload = base64_encode(gzdeflate(json_encode(self::$debuggingData), 9, ZLIB_ENCODING_DEFLATE));
+
+        // TODO: Check if payload is too big or other error occured and report that back to user
+        $pusher->trigger('private-' . $_ENV['PUSHER_CHANNEL'], 'debugging-event', $payload);
     }
 
     private static function cleanStringifiedObject($object)
