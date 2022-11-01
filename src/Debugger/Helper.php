@@ -25,10 +25,9 @@ class Helper
             self::$debuggingData['frames'] = [];
         }
 
-        $currentWorkingDirectory = getcwd() . DIRECTORY_SEPARATOR;
-
         $frame = [
-            'filename' => str_replace($currentWorkingDirectory, '', $calledFromFile),
+            // TODO: Improve how absolute path of webroot is determined
+            'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
             'lineno' => $calledFromLine,
             'timestamp' => date('H:i:s', $clock),
             'date' => date('Y-m-d', $clock),
@@ -47,7 +46,7 @@ class Helper
 
         foreach ($backtrace as $depth => $backtraceDetails) {
             // Retain only absolute path (remove webroot) from backtrace
-            $backtrace[$depth]['file'] = str_replace($currentWorkingDirectory, '', $backtraceDetails['file']);
+            $backtrace[$depth]['file'] = str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']);
 
             $arguments = [];
 
@@ -67,7 +66,7 @@ class Helper
                     '(' . $arguments . ')'
                 ,
                 'type' => 'file',
-                'filename' => $backtraceDetails['file'],
+                'filename' => str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']),
                 'lineno' => $backtraceDetails['line'],
                 'retrieve_context' => false,
             ];
@@ -77,7 +76,7 @@ class Helper
             $stack[] = [
                 'where' => '{main}',
                 'type' => '',
-                'filename' => $calledFromFile,
+                'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
                 'lineno' => $calledFromLine,
             ];
         }
