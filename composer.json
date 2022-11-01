@@ -1,4 +1,5 @@
 {
+    "name": "juris-d3/codeinsights-php-debugger-library",
     "require": {
         "vlucas/phpdotenv": "^5.5",
         "pusher/pusher-php-server": "^7.2"
