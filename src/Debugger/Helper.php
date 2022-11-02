@@ -62,25 +62,25 @@ class Helper
             // Retain only absolute path (remove webroot) from backtrace
             $backtrace[$depth]['file'] = str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']);
 
-            $arguments = [];
+            // Ignoring function/method arguments for now because they should be dumped with snapshot's local context variables anyway
+            //
+            // $arguments = [];
+            //
+            // if (isset($backtraceDetails['args']) === true && empty($backtraceDetails['args']) === false) {
+            //     foreach ($backtraceDetails['args'] as $arg) {
+            //         $arguments[] = var_export($arg, true);
+            //     }
+            // }
+            //
+            // $arguments = implode(', ', $arguments);
+            //
+            // $callSource = '';
+            //
+            // if (isset($backtraceDetails['class'])) {
+            //     $callSource .= $backtraceDetails['class'] . $backtraceDetails['type'];
+            // }
 
-            if (isset($backtraceDetails['args']) === true && empty($backtraceDetails['args']) === false) {
-                foreach ($backtraceDetails['args'] as $arg) {
-                    $arguments[] = var_export($arg, true);
-                }
-            }
-
-            $arguments = implode(', ', $arguments);
-
-            $arguments = self::cleanStringifiedObject($arguments);
-
-            $callSource = '';
-
-            if (isset($backtraceDetails['class'])) {
-                $callSource .= $backtraceDetails['class'] . $backtraceDetails['type'];
-            }
-
-            $callSource .= $backtraceDetails['function'] . '(' . $arguments . ')';
+            $callSource = $backtraceDetails['function'] . '()';
 
             if ($callSource == 'unknown()') {
                 $callSource = '{extension}';
@@ -178,18 +178,6 @@ class Helper
 
         // TODO: Check if payload is too big or other error occured and report that back to user
         $pusher->trigger('private-' . $_ENV['PUSHER_CHANNEL'], 'debugging-event', $payload);
-    }
-
-    private static function cleanStringifiedObject($object)
-    {
-        $object = str_replace("\n", '', $object);
-        $object = preg_replace('/\s+/', ' ', $object);
-
-        // TODO: Check for a cleaner way to dump objects when they are passed as arguments
-        $object = str_replace(',)', ')', $object);
-        $object = str_replace('( \'', '(\'', $object);
-
-        return $object;
     }
 
     private static function convertVariablesToStringifiedArrayList($variables, $constantsListed = false)
