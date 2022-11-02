@@ -85,8 +85,7 @@ class Helper
             if ($callSource == 'unknown') {
                 $callSource = '{extension}';
             }
-
-            if (strpos($callSource, '{closure}') === false) {
+            elseif (strpos($callSource, '{closure}') === false) {
                 $callSource .= '()';
             }
 
@@ -98,6 +97,11 @@ class Helper
                 'lineno' => $backtraceDetails['line'],
                 'retrieve_context' => false,
             ];
+        }
+
+        if ($frame['filename'] == 'codeinsights://debug-eval') {
+            $frame['filename'] = $backtrace[0]['file'];
+            $frame['lineno'] = $backtrace[0]['line'];
         }
 
         // === POPULATE FRAME WITH LOCAL CONTEXT VARIABLES ===
