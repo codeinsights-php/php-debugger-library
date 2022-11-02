@@ -50,8 +50,7 @@ class Helper
 
             $arguments = [];
 
-            if (isset($backtraceDetails['args']) === true && empty($backtraceDetails['args']) === false)
-            {
+            if (isset($backtraceDetails['args']) === true && empty($backtraceDetails['args']) === false) {
                 foreach ($backtraceDetails['args'] as $arg) {
                     $arguments[] = var_export($arg, true);
                 }
@@ -63,15 +62,13 @@ class Helper
 
             $callSource = '';
 
-            if (isset($backtraceDetails['class']))
-            {
+            if (isset($backtraceDetails['class'])) {
                 $callSource .= $backtraceDetails['class'] . $backtraceDetails['type'];
             }
 
             $callSource .= $backtraceDetails['function'] . '(' . $arguments . ')';
 
-            if ($callSource == 'unknown()')
-            {
+            if ($callSource == 'unknown()') {
                 $callSource = '{extension}';
             }
 
@@ -153,8 +150,7 @@ class Helper
     {
         // print_r(self::$debuggingData); die();
 
-        $pusher = new \Pusher\Pusher
-        (
+        $pusher = new \Pusher\Pusher(
             $_ENV['PUSHER_APP_KEY'],
             $_ENV['PUSHER_APP_SECRET'],
             $_ENV['PUSHER_APP_ID'],
