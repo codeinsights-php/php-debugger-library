@@ -2,10 +2,18 @@
 
 namespace CodeInsights\Debugger;
 
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\CliDumper;
+
+// use Symfony\Component\VarDumper\Dumper\HtmlDumper;
+
 class Helper
 {
     private static array $debuggingData = [];
     private static bool $firstDebugDuringThisRequest = true;
+
+    private static \Symfony\Component\VarDumper\Cloner\VarCloner $varCloner;
+    private static \Symfony\Component\VarDumper\Dumper\CliDumper $varDumper;
 
     public static function debug($variable, $variableName, $localContextVariables, $backtrace, $calledFromFile, $calledFromLine): void
     {
@@ -23,6 +31,12 @@ class Helper
             ];
 
             self::$debuggingData['frames'] = [];
+
+            self::$varCloner = new VarCloner();
+            self::$varDumper = new CliDumper();
+
+            self::$varCloner->setMaxItems(30);
+            self::$varCloner->setMaxString(100);
         }
 
         $frame = [
@@ -183,42 +197,25 @@ class Helper
         $variableList = [];
 
         foreach ($variables as $variableName => $variableValue) {
-            switch (gettype($variableValue)) {
-                case 'object':
-
-                    $variableValue = var_export($variableValue, true);
-                    $variableValue = self::cleanStringifiedObject($variableValue);
-
-                    break;
-
-                case 'array':
-
-                    if (empty($variableValue) === true) {
-                        $variableValue = 'array()';
-                    } else {
-                        $variableValue = var_export($variableValue, true);
-                        $variableValue = str_replace('array (', 'array(', $variableValue);
-                    }
-
-                    break;
-
-                case 'string':
-                case 'integer':
-                case 'boolean':
-
-                    $variableValue = var_export($variableValue, true);
-
-                    break;
-
-                default:
-
-                    // die('-- ' . gettype($variableValue) . ' --');
-                    $variableValue = var_export($variableValue, true);
-            }
-
+            $variableValue = trim(self::dump($variableValue));
             $variableList[] = ($constantsListed !== true ? '$' : '') . $variableName . ' = ' . $variableValue . ';';
         }
 
         return $variableList;
+    }
+
+    private static function dump($variable): string
+    {
+        $data = self::$varCloner->cloneVar($variable);
+
+        // https://symfony.com/doc/current/components/var_dumper/advanced.html#cloners
+        $data->withMaxDepth(2);
+        $data->withMaxItemsPerDepth(50);
+
+        return self::$varDumper->dump($data, true, [
+            // 1 and 160 are the default values for these options
+            'maxDepth' => 1,
+            'maxStringLength' => 160,
+        ]);
     }
 }
