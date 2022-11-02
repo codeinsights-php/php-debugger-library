@@ -96,6 +96,7 @@ class Helper
                 'filename' => str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']),
                 'lineno' => $backtraceDetails['line'],
                 'retrieve_context' => false,
+                'dump_readable' => '',
             ];
         }
 
@@ -116,12 +117,7 @@ class Helper
         unset($localContextVariables['_SERVER']);
 
         if (empty($localContextVariables) === false) {
-            $stack[0]['retrieve_context'] = true;
-            $stack[0]['contexts'][] = ['name' => 'Locals'];
-
-            $variableList = self::convertVariablesToStringifiedArrayList($localContextVariables);
-
-            $stack[0]['dump'][] = ['readable' => $variableList]; // each array record = line with a variable and its value
+            self::dumpVariablesForDebugging($stack[0], 'Locals', $localContextVariables);
         }
 
         // === POPULATE FRAME WITH GLOBAL VARIABLES ===
@@ -130,12 +126,7 @@ class Helper
             $constants = get_defined_constants(true)['user'] ?? array();
 
             if (empty($GLOBALS) === false) {
-                $stack[0]['retrieve_context'] = true;
-                $stack[0]['contexts'][] = ['name' => 'Superglobals'];
-
-                $variableList = self::convertVariablesToStringifiedArrayList($GLOBALS);
-
-                $stack[0]['dump'][] = ['readable' => $variableList];
+                self::dumpVariablesForDebugging($stack[0], 'Superglobals', $GLOBALS);
             }
         }
 
@@ -145,12 +136,7 @@ class Helper
             $constants = get_defined_constants(true)['user'] ?? array();
 
             if (empty($constants) === false) {
-                $stack[0]['retrieve_context'] = true;
-                $stack[0]['contexts'][] = ['name' => 'User defined constants'];
-
-                $variableList = self::convertVariablesToStringifiedArrayList($constants, constantsListed: true);
-
-                $stack[0]['dump'][] = ['readable' => $variableList];
+                self::dumpVariablesForDebugging($stack[0], 'User defined constants', $constants, constantsListed: true);
             }
         }
 
@@ -165,7 +151,7 @@ class Helper
 
         self::$firstDebugDuringThisRequest = false;
 
-        // TODO: Deump / log separately the variable monitored
+        // TODO: Feature - Dump / log separately the variable monitored
     }
 
     public static function sendDebugData(): void
@@ -188,16 +174,20 @@ class Helper
         $pusher->trigger('private-' . $_ENV['PUSHER_CHANNEL'], 'debugging-event', $payload);
     }
 
-    private static function convertVariablesToStringifiedArrayList($variables, $constantsListed = false)
+    private static function dumpVariablesForDebugging(&$stacktrace, $groupName, $variables, $constantsListed = false) : void
     {
-        $variableList = [];
+        $stacktrace['retrieve_context'] = true;
+
+        if (empty($stacktrace['dump_readable']) === false) {
+            $stacktrace['dump_readable'] .= "\n";
+        }
+
+        $stacktrace['dump_readable'] .= '// ' . $groupName . "\n";
 
         foreach ($variables as $variableName => $variableValue) {
             $variableValue = trim(self::dump($variableValue));
-            $variableList[] = ($constantsListed !== true ? '$' : '') . $variableName . ' = ' . $variableValue . ';';
+            $stacktrace['dump_readable'] .= ($constantsListed !== true ? '$' : '') . $variableName . ' = ' . $variableValue . ';' . "\n";
         }
-
-        return $variableList;
     }
 
     private static function dump($variable): string
