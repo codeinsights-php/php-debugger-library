@@ -80,10 +80,14 @@ class Helper
             //     $callSource .= $backtraceDetails['class'] . $backtraceDetails['type'];
             // }
 
-            $callSource = $backtraceDetails['function'] . '()';
+            $callSource = $backtraceDetails['function'];
 
-            if ($callSource == 'unknown()') {
+            if ($callSource == 'unknown') {
                 $callSource = '{extension}';
+            }
+
+            if (strpos($callSource, '{closure}') === false) {
+                $callSource .= '()';
             }
 
             // Transform / wrangle backtrace data to the stacktrace format expected by the web "IDE"
