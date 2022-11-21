@@ -109,6 +109,18 @@ class Helper
             $frame['lineno'] = $backtrace[0]['line'];
         }
 
+        if (empty($backtrace))
+        {
+            $stack[] = [
+                'where' => '{main}',
+                'type' => 'file',
+                'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
+                'lineno' => $calledFromLine,
+                'retrieve_context' => false,
+                'dump_readable' => '',
+            ];
+        }
+
         // === POPULATE FRAME WITH LOCAL CONTEXT VARIABLES ===
 
         // Remove superglobals, they're not really local context variables
