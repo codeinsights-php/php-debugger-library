@@ -11,6 +11,7 @@ class Helper
 {
     private static array $debuggingData = [];
     private static bool $firstDebugDuringThisRequest = true;
+    private static string $logFilename;
 
     private static \Symfony\Component\VarDumper\Cloner\VarCloner $varCloner;
     private static \Symfony\Component\VarDumper\Dumper\CliDumper $varDumper;
@@ -37,6 +38,8 @@ class Helper
 
             self::$varCloner->setMaxItems(30);
             self::$varCloner->setMaxString(100);
+
+            self::$logFilename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.log';
         }
 
         $frame = [
@@ -97,6 +100,7 @@ class Helper
                 'lineno' => $backtraceDetails['line'],
                 'retrieve_context' => false,
                 'dump_readable' => '',
+                // 'debugOriginalBacktrace' => $backtraceDetails,
             ];
         }
 
@@ -158,20 +162,10 @@ class Helper
     {
         // print_r(self::$debuggingData); die();
 
-        $pusher = new \Pusher\Pusher(
-            $_ENV['PUSHER_APP_KEY'],
-            $_ENV['PUSHER_APP_SECRET'],
-            $_ENV['PUSHER_APP_ID'],
-            [
-                'cluster' => $_ENV['PUSHER_CLUSTER'],
-                'useTLS' => true,
-            ],
-        );
+        $pathForLogDump = dirname(ini_get('codeinsights.breakpoint_file')) . '/logs/';
+        $logFile = $pathForLogDump . self::$logFilename;
 
-        $payload = base64_encode(gzdeflate(json_encode(self::$debuggingData), 9, ZLIB_ENCODING_DEFLATE));
-
-        // TODO: Check if payload is too big or other error occured and report that back to user
-        $pusher->trigger('private-' . $_ENV['PUSHER_CHANNEL'], 'debugging-event', $payload);
+        file_put_contents($logFile, json_encode(self::$debuggingData));
     }
 
     private static function dumpVariablesForDebugging(&$stacktrace, $groupName, $variables, $constantsListed = false) : void
