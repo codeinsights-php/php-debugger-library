@@ -174,7 +174,16 @@ class Helper
     {
         // print_r(self::$debuggingData); die();
 
-        $pathForLogDump = dirname(ini_get('codeinsights.breakpoint_file')) . '/logs/';
+        $pathForLogDump = ini_get('codeinsights.directory');
+
+        if (substr($pathForLogDump, -1) !== DIRECTORY_SEPARATOR)
+        {
+            $pathForLogDump .= DIRECTORY_SEPARATOR;
+        }
+
+        // TODO: Create path if it does not exist
+        $pathForLogDump .= 'logs/';
+
         $logFile = $pathForLogDump . self::$logFilename;
 
         file_put_contents($logFile, json_encode(self::$debuggingData));
