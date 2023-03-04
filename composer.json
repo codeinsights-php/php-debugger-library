@@ -5,7 +5,6 @@
     "license": "MIT",
     "type": "library",
     "require": {
-        "vlucas/phpdotenv": "^5.5",
         "symfony/var-dumper": "^6.1"
     },
     "autoload": {
