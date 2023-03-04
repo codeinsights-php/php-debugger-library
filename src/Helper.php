@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CodeInsights\Debugger;
 
 use Symfony\Component\VarDumper\Cloner\VarCloner;

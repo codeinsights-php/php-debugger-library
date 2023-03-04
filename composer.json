@@ -8,12 +8,18 @@
         "php": "~7.4.0 || ~8.0.0 || ~8.1.0",
         "symfony/var-dumper": "^4.4 || ^5.0 || ^6.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
     "autoload": {
         "psr-4": {
           "CodeInsights\\Debugger\\": "src/"
         }
     },
     "autoload-dev": {
+        "psr-4": {
+          "CodeInsights\\Debugger\\Tests\\": "tests/"
+        }
     },
     "extra": {
         "branch-alias": {
