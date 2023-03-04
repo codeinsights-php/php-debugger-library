@@ -5,6 +5,7 @@
     "license": "MIT",
     "type": "library",
     "require": {
+        "php": "~7.4.0 || ~8.0.0 || ~8.1.0",
         "symfony/var-dumper": "^6.1"
     },
     "autoload": {
