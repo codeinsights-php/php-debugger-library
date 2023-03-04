@@ -1,6 +1,7 @@
 {
     "name": "codeinsights/codeinsights-php",
     "description": "CodeInsights Debugger",
+    "keywords": ["codeinsights", "observability", "debug"],
     "license": "MIT",
     "type": "library",
     "require": {
