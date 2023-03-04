@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   tests:
-    name: Test with PHP ${{ matrix.php-version }}, VarDumper ${{ matrix.var-dumper }}, Satbility ${{ matrix.stability }}
+    name: Test with PHP ${{ matrix.php-version }}, VarDumper ${{ matrix.var-dumper }}, '${{ matrix.stability }}' stability
     runs-on: ubuntu-latest
 
     strategy:
@@ -30,6 +30,9 @@ jobs:
         stability:
           - "stable"
           - "lowest"
+        exclude:
+          - php-version: "7.4"
+            var-dumper: "6.0"
 
     steps:
     - name: "Checkout"
@@ -48,7 +51,7 @@ jobs:
         composer require --no-update symfony/var-dumper ^${{ matrix.var-dumper }}
 
     - name: Install dependencies
-      run: composer update --no-progress --no-suggest --prefer-${{ matrix.stability }}
+      run: composer update --no-interaction --no-progress --prefer-${{ matrix.stability }}
 
     - name: Run tests
       run: ./vendor/bin/phpunit --no-coverage
