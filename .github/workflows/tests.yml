@@ -48,7 +48,7 @@ jobs:
         composer require --no-update symfony/var-dumper ^${{ matrix.var-dumper }}
 
     - name: Install dependencies
-      run: composer install --no-progress --no-suggest --prefer-${{ matrix.stability }}
+      run: composer update --no-progress --no-suggest --prefer-${{ matrix.stability }}
 
     - name: Run tests
       run: ./vendor/bin/phpunit --no-coverage
