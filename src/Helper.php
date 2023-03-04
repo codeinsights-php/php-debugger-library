@@ -5,8 +5,6 @@ namespace CodeInsights\Debugger;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\CliDumper;
 
-// use Symfony\Component\VarDumper\Dumper\HtmlDumper;
-
 class Helper
 {
     private static array $debuggingData = [];
@@ -51,8 +49,6 @@ class Helper
             'microtime' => $timestamp,
             'stack' => [],
         ];
-
-        // print_r($frame);
 
         // === POPULATE STACKTRACE ===
 
@@ -156,14 +152,9 @@ class Helper
             }
         }
 
-        // print_r($stack);
-
         $frame['stack'] = $stack;
 
-        // print_r($frame);
-
         self::$debuggingData['frames'][] = $frame;
-        // echo '---' . "\n";
 
         self::$firstDebugDuringThisRequest = false;
 
@@ -172,8 +163,6 @@ class Helper
 
     public static function sendDebugData(): void
     {
-        // print_r(self::$debuggingData); die();
-
         $pathForLogDump = ini_get('codeinsights.directory');
 
         if (substr($pathForLogDump, -1) !== DIRECTORY_SEPARATOR)
