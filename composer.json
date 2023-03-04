@@ -10,7 +10,7 @@
     },
     "autoload": {
         "psr-4": {
-          "CodeInsights\\": "src/"
+          "CodeInsights\\Debugger\\": "src/"
         }
     },
     "autoload-dev": {
