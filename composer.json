@@ -1,6 +1,7 @@
 {
     "name": "codeinsights/codeinsights-php",
     "description": "CodeInsights Debugger",
+    "license": "MIT",
     "type": "library",
     "require": {
         "vlucas/phpdotenv": "^5.5",
