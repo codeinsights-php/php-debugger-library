@@ -210,4 +210,9 @@ class Helper
             'maxStringLength' => 160,
         ]);
     }
+
+    public static function reportErrorWhenEvaluatingBreakpoint($breakpointId, $filename, $lineNumber, $errorMessage): void
+    {
+        // TODO: Empty placeholder for future functionality - informing user about failing breakpoints (e.g. invalid user input for debugging)
+    }
 }
