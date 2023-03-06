@@ -43,8 +43,8 @@ class Helper
         }
 
         $frame = [
-            // TODO: Improve how absolute path of webroot is determined
-            'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
+            // TODO: Determine and remove webroot from absolute path?
+            'filename' => $calledFromFile,
             'lineno' => $calledFromLine,
             'timestamp' => date('H:i:s', $clock),
             'date' => date('Y-m-d', $clock),
@@ -60,8 +60,8 @@ class Helper
         // unset($backtrace[0]);
 
         foreach ($backtrace as $depth => $backtraceDetails) {
-            // Retain only absolute path (remove webroot) from backtrace
-            $backtrace[$depth]['file'] = str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']);
+            // TODO: Determine and remove webroot from absolute path?
+            $backtrace[$depth]['file'] = $backtraceDetails['file'];
 
             // Ignoring function/method arguments for now because they should be dumped with snapshot's local context variables anyway
             //
@@ -94,7 +94,8 @@ class Helper
             $stack[] = [
                 'where' => $callSource,
                 'type' => 'file',
-                'filename' => str_replace($_ENV['WEBROOT'], '', $backtraceDetails['file']),
+                // TODO: Determine and remove webroot from absolute path?
+                'filename' => $backtraceDetails['file'],
                 'lineno' => $backtraceDetails['line'],
                 'retrieve_context' => false,
                 'dump_readable' => '',
@@ -112,7 +113,8 @@ class Helper
             $stack[] = [
                 'where' => '{main}',
                 'type' => 'file',
-                'filename' => str_replace($_ENV['WEBROOT'], '', $calledFromFile),
+                // TODO: Determine and remove webroot from absolute path?
+                'filename' => $calledFromFile,
                 'lineno' => $calledFromLine,
                 'retrieve_context' => false,
                 'dump_readable' => '',
