@@ -174,8 +174,11 @@ class Helper
             $pathForLogDump .= DIRECTORY_SEPARATOR;
         }
 
-        // TODO: Create path if it does not exist
         $pathForLogDump .= 'logs/';
+
+        if (false === is_dir($pathForLogDump)) {
+            mkdir($pathForLogDump, 0777, true);
+        }
 
         $logFile = $pathForLogDump . self::$logFilename;
 
