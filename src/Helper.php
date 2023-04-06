@@ -16,7 +16,7 @@ class Helper
     private static \Symfony\Component\VarDumper\Cloner\VarCloner $varCloner;
     private static \Symfony\Component\VarDumper\Dumper\CliDumper $varDumper;
 
-    public static function debug($variable, $variableName, $localContextVariables, $backtrace, $calledFromFile, $calledFromLine): void
+    public static function debug($variable, $variableName, $localContextVariables, $backtrace, $calledFromFile, $calledFromLine): bool
     {
         $timestamp = microtime(true);
         $clock = time();
@@ -39,7 +39,7 @@ class Helper
             self::$varCloner->setMaxItems(30);
             self::$varCloner->setMaxString(100);
 
-            self::$logFilename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.log';
+            self::$logFilename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.dump';
         }
 
         $frame = [
@@ -163,9 +163,13 @@ class Helper
         self::$firstDebugDuringThisRequest = false;
 
         // TODO: Feature - Dump / log separately the variable monitored
+
+        // Otherwise extension will treat calling of this method as unsucessful and report an error
+        // by calling reportErrorWhenEvaluatingBreakpoint() method
+        return true;
     }
 
-    public static function sendDebugData(): void
+    public static function dumpDataForAgent($logFilename, $data): void
     {
         $pathForLogDump = ini_get('codeinsights.directory');
 
@@ -176,13 +180,22 @@ class Helper
 
         $pathForLogDump .= 'logs/';
 
-        if (false === is_dir($pathForLogDump)) {
-            mkdir($pathForLogDump, 0777, true);
+        $logFile = $pathForLogDump . $logFilename;
+
+        // echo 'Trying to write dump to: ' . $logFile . "\n";
+
+        if (is_writable($pathForLogDump) !== true) {
+            // TODO: Log error (folder for file creation might not exist or no write permissions)
+            // echo 'Error: Folder for file creation might not exist or no write permissions.' . "\n";
+            return;
         }
 
-        $logFile = $pathForLogDump . self::$logFilename;
+        file_put_contents($logFile, json_encode($data));
+    }
 
-        file_put_contents($logFile, json_encode(self::$debuggingData));
+    public static function sendDebugData(): void
+    {
+        self::dumpDataForAgent(self::$logFilename, self::$debuggingData);
     }
 
     private static function dumpVariablesForDebugging(&$stacktrace, $groupName, $variables, $constantsListed = false) : void
@@ -216,8 +229,43 @@ class Helper
         ]);
     }
 
-    public static function reportErrorWhenEvaluatingBreakpoint($breakpointId, $filename, $lineNumber, $errorMessage): void
-    {
-        // TODO: Empty placeholder for future functionality - informing user about failing breakpoints (e.g. invalid user input for debugging)
+    // Called if extension encounters fatal runtime errors & exceptions & parse (syntax) errors during evaluation of the breakpoint
+    // or when debug() returns false
+    public static function reportErrorWhenEvaluatingBreakpoint($breakpoint_id, $breakpoint_filename, $breakpoint_lineno, $error_message) {
+
+        // Happens if extension passes exception object
+        if (isset($error_message->message)) {
+            $error_message = $error_message->message;
+        }
+
+        $filename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.message';
+
+        self::dumpDataForAgent($filename, array(
+            'type' => 'error-when-evaluating-breakpoint',
+            'breakpoint_id' => $breakpoint_id,
+            'error_message' => $error_message,
+        ));
+
+        return true;
+    }
+
+    // Extension registers this method as error handler for catching warnings & notices during breakpoint evaluation
+    // https://www.php.net/set_error_handler
+    public static function errorHandler($errno, $errstr, $errfile, $errline) {
+
+        // Retrieve info which brealpoint is currently being processed by the extension
+        codeinsights_current_breakpoint_info($breakpoint_id, $breakpoint_filename, $breakpoint_lineno);
+
+        if (empty($breakpoint_id)) {
+            // Not in the middle of breakpoint evaluation
+            return;
+        }
+
+        $error_message = 'An error occured while trying to evaluate breakpoint (' . $errno . '): ' . $errstr;
+
+        self::reportErrorWhenEvaluatingBreakpoint($breakpoint_id, $breakpoint_filename, $breakpoint_lineno, $error_message);
+
+        // Don't execute PHP internal error handler:
+        // return true;
     }
 }
