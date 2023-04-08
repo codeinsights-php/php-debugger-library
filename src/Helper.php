@@ -229,7 +229,7 @@ class Helper
         ]);
     }
 
-    // Called if extension encounters fatal runtime errors & exceptions & parse (syntax) errors during evaluation of the breakpoint
+    // Called if extension encounters PHP errors during evaluation of the breakpoint
     // or when debug() returns false
     public static function reportErrorWhenEvaluatingBreakpoint($breakpoint_id, $breakpoint_filename, $breakpoint_lineno, $error_message) {
 
@@ -247,25 +247,5 @@ class Helper
         ));
 
         return true;
-    }
-
-    // Extension registers this method as error handler for catching warnings & notices during breakpoint evaluation
-    // https://www.php.net/set_error_handler
-    public static function errorHandler($errno, $errstr, $errfile, $errline) {
-
-        // Retrieve info which brealpoint is currently being processed by the extension
-        codeinsights_current_breakpoint_info($breakpoint_id, $breakpoint_filename, $breakpoint_lineno);
-
-        if (empty($breakpoint_id)) {
-            // Not in the middle of breakpoint evaluation
-            return;
-        }
-
-        $error_message = 'An error occured while trying to evaluate breakpoint (' . $errno . '): ' . $errstr;
-
-        self::reportErrorWhenEvaluatingBreakpoint($breakpoint_id, $breakpoint_filename, $breakpoint_lineno, $error_message);
-
-        // Don't execute PHP internal error handler:
-        // return true;
     }
 }
