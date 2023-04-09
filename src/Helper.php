@@ -234,8 +234,8 @@ class Helper
     public static function reportErrorWhenEvaluatingBreakpoint($breakpoint_id, $breakpoint_filename, $breakpoint_lineno, $error_message) {
 
         // Happens if extension passes exception object
-        if (isset($error_message->message)) {
-            $error_message = $error_message->message;
+        if (method_exists($error_message, 'getMessage')) {
+            $error_message = $error_message->getMessage();
         }
 
         $filename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.message';
