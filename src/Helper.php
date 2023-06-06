@@ -16,13 +16,15 @@ class Helper
     private static \Symfony\Component\VarDumper\Cloner\VarCloner $varCloner;
     private static \Symfony\Component\VarDumper\Dumper\CliDumper $varDumper;
 
-    public static function debug($variable, $variableName, $localContextVariables, $backtrace, $calledFromFile, $calledFromLine): bool
+    public static function debug($variable, $variableName, $localContextVariables, $backtrace, $calledFromFile, $calledFromLine, $project_id = 0): bool
     {
         $timestamp = microtime(true);
         $clock = time();
 
         if (self::$firstDebugDuringThisRequest === true) {
             register_shutdown_function(array(__CLASS__, 'sendDebugData'));
+
+            self::$debuggingData['project_id'] = $project_id;
 
             self::$debuggingData['snapshot_info'] = [
                 'request_time' => (isset($_SERVER['REQUEST_TIME']) ? date('H:i:s', $_SERVER['REQUEST_TIME']) : 'HH:mm:ss'),
@@ -195,7 +197,10 @@ class Helper
 
     public static function sendDebugData(): void
     {
-        self::dumpDataForAgent(self::$logFilename, self::$debuggingData);
+        self::dumpDataForAgent(self::$logFilename, [
+            'event' => 'debug-event',
+            'data' => self::$debuggingData,
+        ]);
     }
 
     private static function dumpVariablesForDebugging(&$stacktrace, $groupName, $variables, $constantsListed = false) : void
@@ -241,9 +246,12 @@ class Helper
         $filename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.message';
 
         self::dumpDataForAgent($filename, array(
-            'type' => 'error-when-evaluating-breakpoint',
-            'breakpoint_id' => $breakpoint_id,
-            'error_message' => $error_message,
+            'event' => 'logpoint-error-evaluating',
+            // TODO: Determine project id
+            'data' => array(
+                'logpoint_id' => $breakpoint_id,
+                'error_message' => $error_message,
+            ),
         ));
 
         return true;
