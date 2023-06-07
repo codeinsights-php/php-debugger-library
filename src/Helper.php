@@ -140,9 +140,13 @@ class Helper
 
         // === POPULATE FRAME WITH GLOBAL VARIABLES ===
 
-        if (self::$firstDebugDuringThisRequest === true) {
-            $constants = get_defined_constants(true)['user'] ?? array();
+        $dumpGlobals = false;
 
+        if (empty($variable) === true && self::$firstDebugDuringThisRequest === true) {
+            $dumpGlobals = true;
+        }
+
+        if ($dumpGlobals === true) {
             if (empty($GLOBALS) === false) {
                 self::dumpVariablesForDebugging($stack[0], 'Superglobals', $GLOBALS);
             }
@@ -150,11 +154,11 @@ class Helper
 
         // === POPULATE FRAME WITH CONSTANTS ===
 
-        if (self::$firstDebugDuringThisRequest === true) {
+        if ($dumpGlobals === true) {
             $constants = get_defined_constants(true)['user'] ?? array();
 
             if (empty($constants) === false) {
-                self::dumpVariablesForDebugging($stack[0], 'User defined constants', $constants, constantsListed: true);
+                self::dumpVariablesForDebugging($stack[0], 'User defined constants', $constants, false);
             }
         }
 
@@ -203,7 +207,7 @@ class Helper
         ]);
     }
 
-    private static function dumpVariablesForDebugging(&$stacktrace, $groupName, $variables, $constantsListed = false) : void
+    private static function dumpVariablesForDebugging(&$stacktrace, $groupName, $variables, $prependVariableNameWithDollarSign = true) : void
     {
         $stacktrace['retrieve_context'] = true;
 
@@ -215,7 +219,12 @@ class Helper
 
         foreach ($variables as $variableName => $variableValue) {
             $variableValue = trim(self::dump($variableValue));
-            $stacktrace['dump_readable'] .= ($constantsListed !== true ? '$' : '') . $variableName . ' = ' . $variableValue . ';' . "\n";
+
+            if ($prependVariableNameWithDollarSign === true) {
+                $variableName = '$' . $variableName;
+            }
+
+            $stacktrace['dump_readable'] .= $variableName . ' = ' . $variableValue . ';' . "\n";
         }
     }
 
