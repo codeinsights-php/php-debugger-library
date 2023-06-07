@@ -138,6 +138,10 @@ class Helper
             self::dumpVariablesForDebugging($stack[0], 'Locals', $localContextVariables);
         }
 
+        if (empty($variable) === false) {
+            self::dumpVariablesForDebugging($stack[0], '', [$variableName => $variable], false);
+        }
+
         // === POPULATE FRAME WITH GLOBAL VARIABLES ===
 
         $dumpGlobals = false;
@@ -215,7 +219,9 @@ class Helper
             $stacktrace['dump_readable'] .= "\n";
         }
 
-        $stacktrace['dump_readable'] .= '// ' . $groupName . "\n";
+        if (empty($groupName) === false) {
+            $stacktrace['dump_readable'] .= '// ' . $groupName . "\n";
+        }
 
         foreach ($variables as $variableName => $variableValue) {
             $variableValue = trim(self::dump($variableValue));
