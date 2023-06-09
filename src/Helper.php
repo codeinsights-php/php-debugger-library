@@ -10,6 +10,7 @@ use Symfony\Component\VarDumper\Dumper\CliDumper;
 class Helper
 {
     private static array $debuggingData = [];
+    private static int $projectId;
     private static bool $firstDebugDuringThisRequest = true;
     private static string $logFilename;
 
@@ -24,7 +25,7 @@ class Helper
         if (self::$firstDebugDuringThisRequest === true) {
             register_shutdown_function(array(__CLASS__, 'sendDebugData'));
 
-            self::$debuggingData['project_id'] = $project_id;
+            self::$projectId = $project_id;
 
             self::$debuggingData['snapshot_info'] = [
                 'request_time' => (isset($_SERVER['REQUEST_TIME']) ? date('H:i:s', $_SERVER['REQUEST_TIME']) : 'HH:mm:ss'),
@@ -207,6 +208,9 @@ class Helper
     {
         self::dumpDataForAgent(self::$logFilename, [
             'event' => 'debug-event',
+            'header' => [
+                'project_id' => self::$projectId,
+            ],
             'data' => self::$debuggingData,
         ]);
     }
@@ -260,11 +264,19 @@ class Helper
 
         $filename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.message';
 
+        $header = array(
+            'logpoint_id' => $breakpoint_id,
+        );
+
+        // TODO: Determine project id reliably and always
+        if (isset(self::$projectId) && empty(self::$projectId) === false) {
+            $header['project_id'] = self::$projectId;
+        }
+
         self::dumpDataForAgent($filename, array(
             'event' => 'logpoint-error-evaluating',
-            // TODO: Determine project id
+            'header' => $header,
             'data' => array(
-                'logpoint_id' => $breakpoint_id,
                 'error_message' => $error_message,
             ),
         ));
