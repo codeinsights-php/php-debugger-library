@@ -42,7 +42,7 @@ class Helper
             self::$varCloner->setMaxItems(30);
             self::$varCloner->setMaxString(100);
 
-            self::$logFilename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.dump';
+            self::$logFilename = microtime(true) . '_' . mt_rand(10000, 99999) . '.json';
         }
 
         $frame = [
@@ -189,7 +189,7 @@ class Helper
             $pathForLogDump .= DIRECTORY_SEPARATOR;
         }
 
-        $pathForLogDump .= 'logs/';
+        $pathForLogDump .= 'messages-outgoing/';
 
         $logFile = $pathForLogDump . $logFilename;
 
@@ -262,7 +262,7 @@ class Helper
             $error_message = $error_message->getMessage();
         }
 
-        $filename = 'codeinsights_' . microtime(true) . '.' . mt_rand(10000, 99999) . '.message';
+        $filename = microtime(true, ) . '_' . mt_rand(10000, 99999) . '.json';
 
         $header = array(
             'logpoint_id' => $breakpoint_id,
